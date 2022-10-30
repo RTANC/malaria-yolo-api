@@ -1,0 +1,4 @@
+python train.py --model_def config/yolov3-custom.cfg --data_config config/custom.data --batch_size 32 --pretrained_weights weights/yolov3.weights
+
+
+python detect.py --image_folder data/samples/ --model_def config/yolov3-custom.cfg --weights_path checkpoints/yolov3_ckpt_2.pth --class_path data/custom/classes.names --conf_thres 0.5 --nms_thres 0.4 --img_size 416
