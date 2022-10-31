@@ -24,6 +24,9 @@ def resize(image, size):
     image = F.interpolate(image.unsqueeze(0), size=size, mode="nearest").squeeze(0)
     return image
 
+def sorter(val):
+    return (round(val[0].item()), round(val[1].item()))
+
 def detector(input_image):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -66,9 +69,13 @@ def detector(input_image):
     if detections is not None:
         # Rescale boxes to original image
         detections = rescale_boxes(detections[0], 416, img.shape[:2])
+        # print(len(detections))
+        detections = sorted(detections, key=sorter)
+        count = 1
 
         for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
             pred_boxes.append({
+                "id": "{:03d}".format(count),
                 "x1": round(x1.item()),
                 "y1": round(y1.item()),
                 "x2": round(x2.item()),
@@ -76,5 +83,6 @@ def detector(input_image):
                 "cls_pred": int(cls_pred),
                 "cls_conf": cls_conf.item()
             })
+            count += 1
 
     return pred_boxes
