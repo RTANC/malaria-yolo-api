@@ -1,5 +1,5 @@
 numpy
-torch>=1.0
+torch==1.11.0
 torchvision
 matplotlib
 tensorflow-gpu
