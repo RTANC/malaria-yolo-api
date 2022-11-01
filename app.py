@@ -28,7 +28,7 @@ class malaria(Resource):
             filename = secure_filename(file.filename)
             input_image = Image.open(file)
             # img.save(os.path.join('output', filename))
-            boxes = detector(input_image)
+            boxes, img = detector(input_image)
             resp = jsonify(boxes)
             resp.status_code = 201
             return resp

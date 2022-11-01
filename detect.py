@@ -8,6 +8,8 @@ import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 
+from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
+
 def pad_to_square(img, pad_value):
     c, h, w = img.shape
     dim_diff = np.abs(h - w)
@@ -66,6 +68,7 @@ def detector(input_image):
     img = np.array(input_image)
     # Draw bounding boxes and labels of detections
     pred_boxes = []
+    rects = []
     if detections is not None:
         # Rescale boxes to original image
         detections = rescale_boxes(detections[0], 416, img.shape[:2])
@@ -83,6 +86,9 @@ def detector(input_image):
                 "cls_pred": int(cls_pred),
                 "cls_conf": cls_conf.item()
             })
+            rects.append(BoundingBox(x1=round(x1.item()),y1=round(y1.item()),x2=round(x2.item()),y2=round(y2.item()),label=int(cls_pred)))
             count += 1
+        bbs = BoundingBoxesOnImage(rects,shape=img.shape)
+        img_with_box = bbs.draw_on_image(img, size=2)
 
-    return pred_boxes
+    return pred_boxes, img_with_box
