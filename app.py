@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from detect import detector
 import os
@@ -11,6 +12,7 @@ def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 api = Api(app)
 
 class malaria(Resource):
@@ -29,7 +31,7 @@ class malaria(Resource):
             input_image = Image.open(file)
             # img.save(os.path.join('output', filename))
             boxes, img = detector(input_image)
-            resp = jsonify(boxes)
+            resp = jsonify({"base64": img})
             resp.status_code = 201
             return resp
         else:

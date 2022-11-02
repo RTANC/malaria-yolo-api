@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     imgs = []  # Stores image paths
     img_detections = []  # Stores detections for each image index
-
+    PIXEL = 0.0104166667
     print("\nPerforming object detection:")
     prev_time = time.time()
     for batch_i, (img_paths, input_imgs) in enumerate(dataloader):
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
         # Create plot
         img = np.array(Image.open(path))
-        plt.figure()
+        plt.figure(figsize=((img.shape[1]*PIXEL), (img.shape[0]*PIXEL)))
         fig, ax = plt.subplots(1)
         ax.imshow(img)
         

@@ -8,7 +8,11 @@ import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
+import io, base64
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from matplotlib.ticker import NullLocator
+from PIL import Image, ImageDraw as Drawer
 
 def pad_to_square(img, pad_value):
     c, h, w = img.shape
@@ -66,9 +70,10 @@ def detector(input_image):
         detections = non_max_suppression(detections, 0.5, 0.4)
     
     img = np.array(input_image)
+
     # Draw bounding boxes and labels of detections
     pred_boxes = []
-    rects = []
+
     if detections is not None:
         # Rescale boxes to original image
         detections = rescale_boxes(detections[0], 416, img.shape[:2])
@@ -76,7 +81,13 @@ def detector(input_image):
         detections = sorted(detections, key=sorter)
         count = 1
 
+        draw = Drawer.Draw(input_image)
+        
         for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
+
+            color = "red" if int(cls_pred) == 1 else "blue"
+            draw.rectangle([x1, y1, x2, y2], outline=color, width=4)
+
             pred_boxes.append({
                 "id": "{:03d}".format(count),
                 "x1": round(x1.item()),
@@ -86,9 +97,12 @@ def detector(input_image):
                 "cls_pred": int(cls_pred),
                 "cls_conf": cls_conf.item()
             })
-            rects.append(BoundingBox(x1=round(x1.item()),y1=round(y1.item()),x2=round(x2.item()),y2=round(y2.item()),label=int(cls_pred)))
             count += 1
-        bbs = BoundingBoxesOnImage(rects,shape=img.shape)
-        img_with_box = bbs.draw_on_image(img, size=2)
+        
+        img_buf = io.BytesIO()
+        input_image.save(img_buf, format='JPEG')
+        img_str = base64.b64encode(img_buf.getvalue())
+        img_str = 'data:image/jpg;base64,' +  (str(img_str)[:-1]).replace("b'", "")
+        img_buf.close()
 
-    return pred_boxes, img_with_box
+    return pred_boxes, img_str
